@@ -2,7 +2,7 @@ export const text = `/**
  * Foo bar
  */
 
-type Allowed =    ;
+type Allowed = 
 `;
 
 export default {
