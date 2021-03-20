@@ -1,25 +1,21 @@
-import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import { useState } from "react";
+import Editor from "./components/Editor";
+import levels from "./levels";
 
 function App() {
+  const [level, setLevel] = useState(levels[0]);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <h1>The Typescript Game</h1>
+      <p>
+        Welcome to the Typescript Game. Typescript adds strict types to Javascript. Types tell you that todo text goes
+        here.
+      </p>
+      <p>
+        Level {levels.indexOf(level) + 1} of {levels.length}.
+      </p>
+      <Editor text={level.text} />
+    </>
   );
 }
 

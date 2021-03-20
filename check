@@ -1,0 +1,17 @@
+linkedEditing
+scrollbar
+    minimap
+find
+    cursorStyle
+automaticLayout
+comments
+    contextmenu: false
+quickSuggestions
+codeLens
+lightbulb
+    folding: false
+fontFamily
+fontWeight
+fontSize
+    showUnused
+    inlineHints
