@@ -1,6 +1,6 @@
-const foo = require("./1.context.d.ts");
-
-console.log(foo);
+export const context = `
+declare type Foo = any;
+`;
 
 export const text = `/**
  * Foo bar
@@ -10,5 +10,6 @@ type Allowed =
 `;
 
 export default {
+  context,
   text,
 };

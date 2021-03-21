@@ -2,7 +2,7 @@ import Editor, { BeforeMount, OnChange, OnMount, OnValidate } from "@monaco-edit
 import { languages } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
-import { Level } from "../levels";
+import levels, { Level } from "../levels";
 
 import "./editor.scss";
 
@@ -46,10 +46,11 @@ export default (props: Props) => {
     // console.log(options);
     // console.log(defaults.workerOptions);
 
+    // TODO: Update when level changes
     // Could possibly set extra context and stuff like this
     defaults.setExtraLibs([
       {
-        content: "declare type Foo = any;",
+        content: props.level.context,
       },
     ]);
   };
