@@ -1,11 +1,13 @@
 import Editor, { BeforeMount, OnChange, OnMount, OnValidate } from "@monaco-editor/react";
-import { languages, Selection } from "monaco-editor";
+import { languages } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
+
+import { Level } from "../levels";
 
 import "./editor.scss";
 
 type Props = {
-  text: string;
+  level: Level;
 };
 
 export default (props: Props) => {
@@ -23,7 +25,7 @@ export default (props: Props) => {
   // When we receive a new level, reset the state
   useEffect(() => {
     reset();
-  }, [props.text]);
+  }, [props.level]);
 
   const reset = () => {
     setHasErrors(true);
@@ -31,11 +33,10 @@ export default (props: Props) => {
 
   const onBeforeMount: BeforeMount = (monaco) => {
     monacoRef.current = monaco;
-    // A-la monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
     const defaults = monaco.languages.typescript.typescriptDefaults;
     const baseOptions = defaults.getCompilerOptions();
     const options: languages.typescript.CompilerOptions = {
-      // The compiler breaks in the browser without `allowNonTsExtensions: true` for some reason ¯\_(ツ)_/¯
+      // The compiler breaks in the browser without `allowNonTsExtensions: true` ¯\_(ツ)_/¯
       ...baseOptions,
       strict: true,
       // Remove default browser interface definitions etc so we don't get a bunch of unrelated things in autocomplete
@@ -57,13 +58,7 @@ export default (props: Props) => {
     editorRef.current = editor;
 
     // TODO: If the level text has a selection, highlight it
-    editor.setSelection(new Selection(5, 16, 5, 19));
-
-    // TODO: Set TS defaults
-    // monaco.languages.setLanguageConfiguration("typescript", {});
-    // languages.typescript.CompilerOptions
-    // languages.typescript.LanguageServiceDefaults.setCompilerOptions(options: CompilerOptions)
-    // console.log(monaco.languages.getLanguages());
+    // editor.setSelection(new Selection(5, 16, 5, 19));
 
     // TODO: We currently load all languages, perhaps we can remove this?
     // const typescriptDefaults = monaco.languages.typescript.typescriptDefaults;
@@ -79,9 +74,9 @@ export default (props: Props) => {
   };
 
   const onValidate: OnValidate = async (markers: monaco.editor.IMarker[]) => {
-    // console.log("validate", markers);
-    // If markers is an empty array then there's no errors
     setHasErrors(Boolean(markers.length));
+
+    console.log(markers);
 
     // TODO: Check if the solution matches what we expected
     const monaco = monacoRef.current;
@@ -97,7 +92,6 @@ export default (props: Props) => {
     */
   };
 
-  // TODO: Remove pointless types from TS?!
   const optons: monaco.editor.IEditorOptions = {
     // The default editor has a lot of distractions
     minimap: {
@@ -120,7 +114,7 @@ export default (props: Props) => {
         className="editor"
         language="typescript"
         options={optons}
-        defaultValue={props.text}
+        defaultValue={props.level.text}
         onChange={onChange}
         beforeMount={onBeforeMount}
         onMount={onMount}

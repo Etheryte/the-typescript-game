@@ -14,7 +14,7 @@ function App() {
       <p>
         Level {levels.indexOf(level) + 1} of {levels.length}.
       </p>
-      <Editor text={level.text} />
+      <Editor level={level} />
     </>
   );
 }
