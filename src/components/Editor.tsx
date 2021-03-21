@@ -43,7 +43,7 @@ export default (props: Props) => {
       noLib: true,
     };
     defaults.setCompilerOptions(options);
-    console.log(options);
+    // console.log(options);
     // console.log(defaults.workerOptions);
 
     // Could possibly set extra context and stuff like this
@@ -54,7 +54,7 @@ export default (props: Props) => {
     ]);
   };
 
-  const onMount: OnMount = (editor, monaco) => {
+  const onMount: OnMount = async (editor, monaco) => {
     editorRef.current = editor;
 
     // TODO: If the level text has a selection, highlight it
@@ -63,6 +63,16 @@ export default (props: Props) => {
     // TODO: We currently load all languages, perhaps we can remove this?
     // const typescriptDefaults = monaco.languages.typescript.typescriptDefaults;
     // TODO: getCompilerOptions ??
+
+    // No clue why this API is this way
+    const getWorker = await monaco.languages.typescript.getTypeScriptWorker();
+    const tempModel = monaco.editor.createModel("const foo: string = 32", "typescript");
+    console.log("model", tempModel);
+    const worker = await getWorker(tempModel.uri);
+    console.log("worker", worker);
+    const result = await worker.getEmitOutput(tempModel.uri.toString());
+    console.log(result);
+    console.log(await worker.getSyntacticDiagnostics(tempModel.uri.toString()));
   };
 
   function getValue() {
@@ -76,20 +86,13 @@ export default (props: Props) => {
   const onValidate: OnValidate = async (markers: monaco.editor.IMarker[]) => {
     setHasErrors(Boolean(markers.length));
 
-    console.log(markers);
+    // console.log('markers', markers);
 
     // TODO: Check if the solution matches what we expected
     const monaco = monacoRef.current;
     if (!monaco) {
       return;
     }
-
-    /*
-    // No clue why this API is this way
-    const getWorker = await monaco.languages.typescript.getTypeScriptWorker();
-    const worker = await getWorker();
-    console.log(worker);
-    */
   };
 
   const optons: monaco.editor.IEditorOptions = {
