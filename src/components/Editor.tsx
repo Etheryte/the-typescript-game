@@ -1,8 +1,8 @@
-import Editor, { BeforeMount, EditorProps, OnChange, OnMount } from "@monaco-editor/react";
+// import Editor, { BeforeMount, EditorProps, OnChange, OnMount } from "@monaco-editor/react";
 import { languages } from "monaco-editor";
+import MonacoEditor, { EditorDidMount, EditorWillMount } from "react-monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
-import useInterval from "../useInterval";
 import { Level } from "../levels";
 
 import "./editor.scss";
@@ -11,20 +11,17 @@ type Props = {
   level: Level;
 };
 
-const USER_PATH = "file://user";
-const SYSTEM_PATH = "file://system";
+const USER_PATH = "inmemory://user";
+const SYSTEM_PATH = "inmemory://system";
 
 export default (props: Props) => {
-  // This is pretty meh but the types aren't exported conveniently
-  type OnMountParams = Parameters<OnMount>;
-  type Editor = OnMountParams[0];
-  type Monaco = OnMountParams[1];
+  const editorElement = useRef<HTMLDivElement>();
 
-  const userEditorRef = useRef<Editor>();
-  const userMonacoRef = useRef<Monaco>();
+  const userEditorRef = useRef<typeof monaco.editor>();
+  const userMonacoRef = useRef<typeof monaco>();
 
-  const systemEditorRef = useRef<Editor>();
-  const systemMonacoRef = useRef<Monaco>();
+  const systemEditorRef = useRef<typeof monaco.editor>();
+  const systemMonacoRef = useRef<typeof monaco>();
 
   // Levels start out in unsolved state
   const [markers, setMarkers] = useState<monaco.editor.IMarker[]>([]);
@@ -65,14 +62,12 @@ export default (props: Props) => {
   }, 1000);
   */
 
-  const onBeforeMount: BeforeMount = (monaco) => {
-    /*
-    monaco?.editor?.onDidChangeMarkers((uris) => {
+  const onBeforeMount: EditorWillMount = (monaco) => {
+    monaco.editor.onDidChangeMarkers((uris) => {
       for (const uri of uris) {
         console.log("fire from", uri.toString());
       }
     });
-    */
 
     const defaults = monaco.languages.typescript.typescriptDefaults;
     const baseOptions = defaults.getCompilerOptions();
@@ -96,7 +91,12 @@ export default (props: Props) => {
     ]);
   };
 
-  const onMount: OnMount = async (editor, monaco) => {
+  const onMount: EditorDidMount = (instance, monaco) => {
+    const model = monaco.editor.createModel(props.level.text, "typescript", monaco.Uri.parse(USER_PATH));
+    instance.setModel(model);
+
+    console.log(monaco.editor.getModels());
+
     // TODO: If the level text has a selection, highlight it
     // editor.setSelection(new Selection(5, 16, 5, 19));
     // TODO: We currently load all languages, perhaps we can remove this?
@@ -116,15 +116,16 @@ export default (props: Props) => {
   };
 
   function getValue() {
-    return userEditorRef.current?.getValue();
+    // return userEditorRef.current?.getValue();
   }
 
-  const onUserChange: OnChange = (value) => {
-    systemEditorRef.current?.setValue(value ?? "");
+  const onUserChange = (value) => {
+    // systemEditorRef.current?.setValue(value ?? "");
   };
 
-  const optons: monaco.editor.IEditorOptions = {
+  const options: monaco.editor.IStandaloneEditorConstructionOptions = {
     // The default editor has a lot of distractions
+    /*
     minimap: {
       enabled: false,
     },
@@ -137,48 +138,21 @@ export default (props: Props) => {
     inlineHints: {
       enabled: false,
     },
-  };
-
-  const baseProps: EditorProps = {
-    language: "typescript",
-    options: optons,
-    loading: "",
+    */
+    model: null,
   };
 
   return (
-    <div className="editor-area">
+    <>
       <pre>{JSON.stringify(markers)}</pre>
-      <Editor
-        {...baseProps}
-        path={USER_PATH}
-        className="editor"
-        defaultValue={props.level.text}
-        beforeMount={(monaco) => {
-          userMonacoRef.current = monaco;
-          return onBeforeMount(monaco);
-        }}
-        onMount={(editor, monaco) => {
-          console.log("user mount");
-          userEditorRef.current = editor;
-          return onMount(editor, monaco);
-        }}
-        onChange={onUserChange}
-      />
-      <div className="is-not-hidden">
-        <Editor
-          {...baseProps}
-          path={SYSTEM_PATH}
-          beforeMount={(monaco) => {
-            systemMonacoRef.current = monaco;
-            return onBeforeMount(monaco);
-          }}
-          onMount={(editor, monaco) => {
-            console.log("system mount");
-            systemEditorRef.current = editor;
-            return onMount(editor, monaco);
-          }}
+      <div className="editor-area">
+        <MonacoEditor
+          options={options}
+          editorWillMount={onBeforeMount}
+          editorDidMount={onMount}
+          language="typescript"
         />
       </div>
-    </div>
+    </>
   );
 };

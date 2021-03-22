@@ -14,14 +14,15 @@
     "monaco-editor": "^0.23.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-monaco-editor": "^0.43.0",
     "react-scripts": "4.0.3",
     "typescript": "^4.1.2",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -31,7 +32,8 @@
       "prettier"
     ],
     "rules": {
-      "import/no-anonymous-default-export": "off"
+      "import/no-anonymous-default-export": "off",
+      "@typescript-eslint/no-unused-vars": "off"
     }
   },
   "browserslist": {
@@ -48,7 +50,9 @@
   },
   "devDependencies": {
     "eslint-config-prettier": "^8.1.0",
+    "monaco-editor-webpack-plugin": "^3.0.1",
     "node-sass": "^5.0.0",
-    "prettier": "2.2.1"
+    "prettier": "2.2.1",
+    "react-app-rewired": "^2.1.8"
   }
 }

@@ -1,8 +1,6 @@
 .editor-area {
   flex: 1 1 0px;
   background-color: #fff;
-  /* There's a bug in monaco-editor's height calculation, w/e */
-  overflow: hidden;
 
   .editor {
   }
