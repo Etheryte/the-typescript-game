@@ -1,4 +1,4 @@
-import Editor, { BeforeMount, EditorProps, OnMount } from "@monaco-editor/react";
+import Editor, { BeforeMount, EditorProps, OnChange, OnMount } from "@monaco-editor/react";
 import { languages } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
@@ -34,7 +34,9 @@ export default (props: Props) => {
     // TODO: Reset
   }, [props.level]);
 
+  /*
   const getMarkers = (path: string) => {
+    // TODO: This should be a ref
     // The types are wrong here, both `monaco` and `monaco.editor` are undefined at first
     const currentMarkers: monaco.editor.IMarker[] | undefined =
       monaco?.editor?.getModelMarkers({
@@ -44,6 +46,7 @@ export default (props: Props) => {
   };
 
   // TODO: This is really shit and slow, can we do something else here?
+  // TODO: Try `onDidChangeMarkers`
   // There's a bug in Monaco when getting markers with multiple editors, see // Check https://github.com/suren-atoyan/monaco-react/issues/182
   useInterval(() => {
     const userMarkers = getMarkers(USER_PATH);
@@ -60,8 +63,17 @@ export default (props: Props) => {
     // TODO: Implement
     setMarkers([]);
   }, 1000);
+  */
 
   const onBeforeMount: BeforeMount = (monaco) => {
+    /*
+    monaco?.editor?.onDidChangeMarkers((uris) => {
+      for (const uri of uris) {
+        console.log("fire from", uri.toString());
+      }
+    });
+    */
+
     const defaults = monaco.languages.typescript.typescriptDefaults;
     const baseOptions = defaults.getCompilerOptions();
     const options: languages.typescript.CompilerOptions = {
@@ -107,6 +119,10 @@ export default (props: Props) => {
     return userEditorRef.current?.getValue();
   }
 
+  const onUserChange: OnChange = (value) => {
+    systemEditorRef.current?.setValue(value ?? "");
+  };
+
   const optons: monaco.editor.IEditorOptions = {
     // The default editor has a lot of distractions
     minimap: {
@@ -146,6 +162,7 @@ export default (props: Props) => {
           userEditorRef.current = editor;
           return onMount(editor, monaco);
         }}
+        onChange={onUserChange}
       />
       <div className="is-not-hidden">
         <Editor
