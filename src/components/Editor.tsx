@@ -1,8 +1,8 @@
-import Editor, { BeforeMount, OnChange, OnMount, OnValidate } from "@monaco-editor/react";
+import Editor, { BeforeMount, EditorProps, OnMount, OnValidate } from "@monaco-editor/react";
 import { languages } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
-import levels, { Level } from "../levels";
+import { Level } from "../levels";
 
 import "./editor.scss";
 
@@ -16,23 +16,21 @@ export default (props: Props) => {
   type Editor = OnMountParams[0];
   type Monaco = OnMountParams[1];
 
-  const editorRef = useRef<Editor>();
-  const monacoRef = useRef<Monaco>();
+  const userEditorRef = useRef<Editor>();
+  const userMonacoRef = useRef<Monaco>();
+
+  const systemEditorRef = useRef<Editor>();
+  const systemMonacoRef = useRef<Monaco>();
 
   // Levels start out in unsolved state
-  const [hasErrors, setHasErrors] = useState<boolean>(true);
+  const [markers, setMarkers] = useState<monaco.editor.IMarker[]>([]);
 
   // When we receive a new level, reset the state
   useEffect(() => {
-    reset();
+    // TODO: Reset
   }, [props.level]);
 
-  const reset = () => {
-    setHasErrors(true);
-  };
-
   const onBeforeMount: BeforeMount = (monaco) => {
-    monacoRef.current = monaco;
     const defaults = monaco.languages.typescript.typescriptDefaults;
     const baseOptions = defaults.getCompilerOptions();
     const options: languages.typescript.CompilerOptions = {
@@ -56,16 +54,13 @@ export default (props: Props) => {
   };
 
   const onMount: OnMount = async (editor, monaco) => {
-    editorRef.current = editor;
-
     // TODO: If the level text has a selection, highlight it
     // editor.setSelection(new Selection(5, 16, 5, 19));
-
     // TODO: We currently load all languages, perhaps we can remove this?
     // const typescriptDefaults = monaco.languages.typescript.typescriptDefaults;
     // TODO: getCompilerOptions ??
-
     // No clue why this API is this way
+    /*
     const getWorker = await monaco.languages.typescript.getTypeScriptWorker();
     const tempModel = monaco.editor.createModel("const foo: string = 32", "typescript");
     console.log("model", tempModel);
@@ -74,26 +69,27 @@ export default (props: Props) => {
     const result = await worker.getEmitOutput(tempModel.uri.toString());
     console.log(result);
     console.log(await worker.getSyntacticDiagnostics(tempModel.uri.toString()));
+    */
   };
 
   function getValue() {
-    return editorRef.current?.getValue();
+    return userEditorRef.current?.getValue();
   }
 
-  const onChange: OnChange = (value, event) => {
-    // console.log("onChange", value);
-  };
-
-  const onValidate: OnValidate = async (markers: monaco.editor.IMarker[]) => {
-    setHasErrors(Boolean(markers.length));
-
-    // console.log('markers', markers);
-
-    // TODO: Check if the solution matches what we expected
-    const monaco = monacoRef.current;
-    if (!monaco) {
+  const onUserValidate: OnValidate = async (markers: monaco.editor.IMarker[]) => {
+    console.log("user validate", markers);
+    // If there's user-code errors, show those
+    if (markers.length) {
+      setMarkers(markers);
       return;
     }
+
+    // Once there's no user-code errors, set the value to the system UI and validate the level
+  };
+
+  const onSystemValidate: OnValidate = async (markers: monaco.editor.IMarker[]) => {
+    console.log("system validate?!", markers);
+    // setHasErrors(Boolean(markers.length));
   };
 
   const optons: monaco.editor.IEditorOptions = {
@@ -112,19 +108,52 @@ export default (props: Props) => {
     },
   };
 
+  const baseProps: EditorProps = {
+    language: "typescript",
+    options: optons,
+    loading: "",
+  };
+
   return (
     <div className="editor-area">
+      <pre>{JSON.stringify(markers)}</pre>
       <Editor
+        {...baseProps}
         className="editor"
-        language="typescript"
-        options={optons}
         defaultValue={props.level.text}
-        onChange={onChange}
-        beforeMount={onBeforeMount}
-        onMount={onMount}
-        onValidate={onValidate}
-        loading=""
+        beforeMount={(monaco) => {
+          userMonacoRef.current = monaco;
+          return onBeforeMount(monaco);
+        }}
+        onMount={(editor, monaco) => {
+          console.log("user mount");
+          userEditorRef.current = editor;
+          return onMount(editor, monaco);
+        }}
+        onValidate={(markers) => {
+          console.log("call?", markers);
+          return onUserValidate(markers);
+        }}
+        onChange={(foo) => console.log(foo)}
       />
+      <div className="is-not-hidden">
+        <Editor
+          {...baseProps}
+          beforeMount={(monaco) => {
+            systemMonacoRef.current = monaco;
+            return onBeforeMount(monaco);
+          }}
+          onMount={(editor, monaco) => {
+            console.log("system mount");
+            systemEditorRef.current = editor;
+            return onMount(editor, monaco);
+          }}
+          onValidate={onSystemValidate}
+        />
+      </div>
     </div>
   );
+  /*
+  
+   */
 };
