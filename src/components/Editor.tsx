@@ -1,5 +1,5 @@
 // import Editor, { BeforeMount, EditorProps, OnChange, OnMount } from "@monaco-editor/react";
-import { languages } from "monaco-editor";
+import { editor, languages } from "monaco-editor";
 import MonacoEditor, { EditorDidMount, EditorWillMount } from "react-monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
@@ -63,12 +63,6 @@ export default (props: Props) => {
   */
 
   const onBeforeMount: EditorWillMount = (monaco) => {
-    monaco.editor.onDidChangeMarkers((uris) => {
-      for (const uri of uris) {
-        console.log("fire from", uri.toString());
-      }
-    });
-
     const defaults = monaco.languages.typescript.typescriptDefaults;
     const baseOptions = defaults.getCompilerOptions();
     const options: languages.typescript.CompilerOptions = {
@@ -92,10 +86,30 @@ export default (props: Props) => {
   };
 
   const onMount: EditorDidMount = (instance, monaco) => {
-    const model = monaco.editor.createModel(props.level.text, "typescript", monaco.Uri.parse(USER_PATH));
-    instance.setModel(model);
+    // This is only required to keep hot reload happy
+    for (const model of monaco.editor.getModels()) {
+      model.dispose();
+    }
+    instance.setModel(null);
 
-    console.log(monaco.editor.getModels());
+    monaco.editor.onDidChangeMarkers((uris) => {
+      for (const uri of uris) {
+        const markers = monaco.editor.getModelMarkers({
+          resource: uri,
+        });
+        console.log("markers for " + uri.toString(), markers);
+      }
+    });
+
+    const userModel = editor.createModel(props.level.text, "typescript", monaco.Uri.parse(USER_PATH));
+    const systemModel = editor.createModel("", "typescript", monaco.Uri.parse(SYSTEM_PATH));
+    instance.setModel(userModel);
+    console.log(editor.getModels());
+
+    setTimeout(() => {
+      console.log("setting value");
+      systemModel.setValue("const Foo: string = 3;");
+    }, 1000);
 
     // TODO: If the level text has a selection, highlight it
     // editor.setSelection(new Selection(5, 16, 5, 19));
