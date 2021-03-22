@@ -1,4 +1,3 @@
-// import Editor, { BeforeMount, EditorProps, OnChange, OnMount } from "@monaco-editor/react";
 import { editor, languages } from "monaco-editor";
 import MonacoEditor, { EditorDidMount, EditorWillMount } from "react-monaco-editor";
 import { useEffect, useRef, useState } from "react";
@@ -15,14 +14,6 @@ const USER_PATH = "inmemory://user";
 const SYSTEM_PATH = "inmemory://system";
 
 export default (props: Props) => {
-  const editorElement = useRef<HTMLDivElement>();
-
-  const userEditorRef = useRef<typeof monaco.editor>();
-  const userMonacoRef = useRef<typeof monaco>();
-
-  const systemEditorRef = useRef<typeof monaco.editor>();
-  const systemMonacoRef = useRef<typeof monaco>();
-
   // Levels start out in unsolved state
   const [markers, setMarkers] = useState<monaco.editor.IMarker[]>([]);
 
@@ -30,37 +21,6 @@ export default (props: Props) => {
   useEffect(() => {
     // TODO: Reset
   }, [props.level]);
-
-  /*
-  const getMarkers = (path: string) => {
-    // TODO: This should be a ref
-    // The types are wrong here, both `monaco` and `monaco.editor` are undefined at first
-    const currentMarkers: monaco.editor.IMarker[] | undefined =
-      monaco?.editor?.getModelMarkers({
-        resource: monaco.Uri.parse(path),
-      }) || undefined;
-    return currentMarkers;
-  };
-
-  // TODO: This is really shit and slow, can we do something else here?
-  // TODO: Try `onDidChangeMarkers`
-  // There's a bug in Monaco when getting markers with multiple editors, see // Check https://github.com/suren-atoyan/monaco-react/issues/182
-  useInterval(() => {
-    const userMarkers = getMarkers(USER_PATH);
-    // If the editor isn't ready yet, do nothing
-    if (typeof userMarkers === "undefined") {
-      return;
-    }
-    // If there's user-code errors, show those
-    if (userMarkers.length) {
-      setMarkers(userMarkers);
-      return;
-    }
-    // Once there's no user-code errors, set the value to the system UI and validate the level
-    // TODO: Implement
-    setMarkers([]);
-  }, 1000);
-  */
 
   const onBeforeMount: EditorWillMount = (monaco) => {
     const defaults = monaco.languages.typescript.typescriptDefaults;
@@ -73,8 +33,6 @@ export default (props: Props) => {
       noLib: true,
     };
     defaults.setCompilerOptions(options);
-    // console.log(options);
-    // console.log(defaults.workerOptions);
 
     // TODO: Update when level changes
     // Could possibly set extra context and stuff like this
@@ -86,7 +44,7 @@ export default (props: Props) => {
   };
 
   const onMount: EditorDidMount = (instance, monaco) => {
-    // This is only required to keep hot reload happy
+    // This is only required to keep hot reload happy-ish
     for (const model of monaco.editor.getModels()) {
       model.dispose();
     }
@@ -129,17 +87,8 @@ export default (props: Props) => {
     */
   };
 
-  function getValue() {
-    // return userEditorRef.current?.getValue();
-  }
-
-  const onUserChange = (value) => {
-    // systemEditorRef.current?.setValue(value ?? "");
-  };
-
   const options: monaco.editor.IStandaloneEditorConstructionOptions = {
     // The default editor has a lot of distractions
-    /*
     minimap: {
       enabled: false,
     },
@@ -152,7 +101,7 @@ export default (props: Props) => {
     inlineHints: {
       enabled: false,
     },
-    */
+    // We set a model in `onMount()`
     model: null,
   };
 
