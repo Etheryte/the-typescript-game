@@ -1,7 +1,8 @@
-import Editor, { BeforeMount, EditorProps, OnMount, OnValidate } from "@monaco-editor/react";
+import Editor, { BeforeMount, EditorProps, OnChange, OnMount, OnValidate } from "@monaco-editor/react";
 import { languages } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
+import useInterval from "../useInterval";
 import { Level } from "../levels";
 
 import "./editor.scss";
@@ -29,6 +30,31 @@ export default (props: Props) => {
   useEffect(() => {
     // TODO: Reset
   }, [props.level]);
+
+  const getMarkers = (path: string) => {
+    // The types are wrong here, both `monaco` and `monaco.editor` are undefined at first
+    const currentMarkers: monaco.editor.IMarker[] | undefined =
+      monaco?.editor?.getModelMarkers({
+        resource: monaco.Uri.parse(path),
+      }) || undefined;
+    return currentMarkers;
+  };
+
+  // There's a bug in Monaco when getting markers with multiple editors, see // Check https://github.com/suren-atoyan/monaco-react/issues/182
+  useInterval(() => {
+    const userMarkers = getMarkers("file://user");
+    // If the editor isn't ready yet, do nothing
+    if (typeof userMarkers === "undefined") {
+      return;
+    }
+    // If there's user-code errors, show those
+    if (userMarkers.length) {
+      setMarkers(userMarkers);
+      return;
+    }
+    // Once there's no user-code errors, set the value to the system UI and validate the level
+    // TODO: Implement
+  }, 1000);
 
   const onBeforeMount: BeforeMount = (monaco) => {
     const defaults = monaco.languages.typescript.typescriptDefaults;
@@ -76,7 +102,25 @@ export default (props: Props) => {
     return userEditorRef.current?.getValue();
   }
 
+  // Check https://github.com/suren-atoyan/monaco-react/issues/182
+  const onUserChange: OnChange = async () => {
+    setTimeout(() => {
+      const markers = monaco.editor.getModelMarkers({
+        resource: monaco.Uri.parse("file://user"),
+      });
+      console.log("user markers", markers);
+    }, 0);
+  };
+
+  const onSystemChange: OnChange = async () => {
+    const markers = monaco.editor.getModelMarkers({
+      resource: monaco.Uri.parse("file://system"),
+    });
+    console.log("system markers", markers);
+  };
+
   const onUserValidate: OnValidate = async (markers: monaco.editor.IMarker[]) => {
+    return;
     console.log("user validate", markers);
     // If there's user-code errors, show those
     if (markers.length) {
@@ -88,6 +132,7 @@ export default (props: Props) => {
   };
 
   const onSystemValidate: OnValidate = async (markers: monaco.editor.IMarker[]) => {
+    return;
     console.log("system validate?!", markers);
     // setHasErrors(Boolean(markers.length));
   };
@@ -119,6 +164,7 @@ export default (props: Props) => {
       <pre>{JSON.stringify(markers)}</pre>
       <Editor
         {...baseProps}
+        path="file://user"
         className="editor"
         defaultValue={props.level.text}
         beforeMount={(monaco) => {
@@ -134,11 +180,12 @@ export default (props: Props) => {
           console.log("call?", markers);
           return onUserValidate(markers);
         }}
-        onChange={(foo) => console.log(foo)}
+        onChange={onUserChange}
       />
       <div className="is-not-hidden">
         <Editor
           {...baseProps}
+          path="file://system"
           beforeMount={(monaco) => {
             systemMonacoRef.current = monaco;
             return onBeforeMount(monaco);
@@ -148,12 +195,10 @@ export default (props: Props) => {
             systemEditorRef.current = editor;
             return onMount(editor, monaco);
           }}
+          onChange={onSystemChange}
           onValidate={onSystemValidate}
         />
       </div>
     </div>
   );
-  /*
-  
-   */
 };
