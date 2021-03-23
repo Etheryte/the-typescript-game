@@ -72,6 +72,8 @@ export default (props: Props) => {
         model.dispose();
       }
       instance.setModel(null);
+
+      // Remove lingering listeners from the editor
       markersListener.dispose();
     };
   }, [instance, controller, props.level]);
