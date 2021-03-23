@@ -19,9 +19,7 @@ const SYSTEM_PATH = "inmemory://system";
 export default (props: Props) => {
   const [instance, setInstance] = useState<Instance | null>(null);
   const [controller, setController] = useState<Monaco | null>(null);
-
-  // Levels start out in unsolved state
-  const [markers, setMarkers] = useState<monaco.editor.IMarker[]>([]);
+  const [userMarkers, setUserMarkers] = useState<monaco.editor.IMarker[]>([]);
 
   // When we receive a new level, reset the state
   useEffect(() => {
@@ -30,18 +28,21 @@ export default (props: Props) => {
       return;
     }
 
-    // This is required both to keep hot reload happy-ish and to avoid leaks on level changes
+    // Throw away old models
     for (const model of controller.editor.getModels()) {
       model.dispose();
     }
     instance.setModel(null);
 
-    controller.editor.onDidChangeMarkers((uris) => {
+    const markersListener = controller.editor.onDidChangeMarkers((uris) => {
       for (const uri of uris) {
         const markers = controller.editor.getModelMarkers({
           resource: uri,
         });
         console.log("markers for " + uri.toString(), markers);
+        if (uri.toString() === USER_PATH) {
+          setUserMarkers(markers);
+        }
         // TODO: Set system content once there's no markers for user
         // TODO: Validate level based on system markers
       }
@@ -61,14 +62,18 @@ export default (props: Props) => {
     instance.setModel(userModel);
     console.log(editor.getModels());
 
-    setTimeout(() => {
-      console.log("setting value");
-      systemModel.setValue("const Foo: string = 3;");
-    }, 1000);
-
     // TODO: If the level text has a selection, highlight it
     // editor.setSelection(new Selection(5, 16, 5, 19));
     // TODO: We currently load all languages, perhaps we can remove this?
+
+    return function cleanup() {
+      // Keep hot reload happy
+      for (const model of controller.editor.getModels()) {
+        model.dispose();
+      }
+      instance.setModel(null);
+      markersListener.dispose();
+    };
   }, [instance, controller, props.level]);
 
   const onBeforeMount: EditorWillMount = (controller: Monaco) => {
@@ -108,9 +113,14 @@ export default (props: Props) => {
     model: null,
   };
 
+  const readableMarkers = userMarkers.map((marker) => {
+    const line = marker.startLineNumber ? `Line ${marker.startLineNumber}: ` : "";
+    return `${line}${marker.message}`;
+  });
+
   return (
     <>
-      <pre>{JSON.stringify(markers)}</pre>
+      <pre>{readableMarkers || ""}</pre>
       <div className="editor-area">
         <MonacoEditor options={options} editorWillMount={onBeforeMount} editorDidMount={onMount} />
       </div>
