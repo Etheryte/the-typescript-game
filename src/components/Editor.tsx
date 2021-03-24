@@ -21,7 +21,7 @@ export default (props: Props) => {
   const [instance, setInstance] = useState<Instance | null>(null);
   const [controller, setController] = useState<Monaco | null>(null);
   const [userMarkers, setUserMarkers] = useState<monaco.editor.IMarker[]>([]);
-  const [isLevelValid, setIsLevelValid] = useState(false);
+  const [levelState, setLevelState] = useState<Partial<ReturnType<typeof props.level.getState>>>({ isValid: false });
 
   // When we receive a new level, reset the state
   useEffect(() => {
@@ -45,21 +45,17 @@ export default (props: Props) => {
     ]);
 
     const userModel = editor.createModel(props.level.text, "typescript", controller.Uri.parse(USER_PATH));
-    // The system model needs to be block scoped off from the user model since we don't use `isolatedModules: true`
-    const systemModel = editor.createModel(
-      /*
-      // TODO: This or manual block scoping via {...}?
-      props.level.validateText + ";export default {};",
-      */
-      "",
-      "typescript",
-      controller.Uri.parse(SYSTEM_PATH)
-    );
+    const systemModel = editor.createModel("", "typescript", controller.Uri.parse(SYSTEM_PATH));
 
     // Setting the system value on markers isn't enough since we don't get updates when one valid state moves to another a-la copy-paste
     const lodashDebounceChange = debounce(() => {
       console.log("update system");
-      systemModel.setValue(userModel.getValue() + "\n" + props.level.validateText + ";export default{};");
+      // The system model needs to be block scoped off from the user model since we don't use `isolatedModules: true`
+      // Could alternatively do `export default {}` here too
+      systemModel.setValue(`{
+      ;${userModel.getValue()}
+      ;${props.level.validateText}
+      }`);
     }, 100);
     const changeListener = userModel.onDidChangeContent(lodashDebounceChange);
 
@@ -73,7 +69,7 @@ export default (props: Props) => {
         if (path === USER_PATH) {
           setUserMarkers(markers);
         } else if (path === SYSTEM_PATH) {
-          setIsLevelValid(props.level.validate(markers));
+          setLevelState(props.level.getState(markers));
         }
       }
     });
@@ -147,8 +143,8 @@ export default (props: Props) => {
 
   return (
     <>
-      <pre>Is level valid: {isLevelValid ? "true" : "false"}</pre>
-      <pre>{readableMarkers || ""}</pre>
+      <pre>Level state {JSON.stringify(levelState)}</pre>
+      <pre>Markers: {readableMarkers || ""}</pre>
       <div className="editor-area">
         <MonacoEditor options={options} editorWillMount={onBeforeMount} editorDidMount={onMount} />
       </div>
