@@ -132,21 +132,34 @@ export default (props: Props) => {
       enabled: false,
     },
     language: "typescript",
-    // We set a model in `onMount()`
+    // We set a model in `onMount()` instead
     model: null,
   };
 
-  const readableMarkers = userMarkers.map((marker) => {
-    const line = marker.startLineNumber ? `Line ${marker.startLineNumber}: ` : "";
-    return `${line}${marker.message}`;
-  });
+  const readableMarkers = userMarkers
+    .map((marker) => {
+      const line = marker.startLineNumber ? `Problem on line ${marker.startLineNumber}: ` : "";
+      return `${line}${marker.message}`;
+    })
+    .join(" ");
+  const hasMarkers = !!readableMarkers.length;
+  const isValid = !!levelState.isValid;
+
+  const isError = hasMarkers;
+  const isWarning = !isError && !isValid;
+  const isSuccess = !isWarning;
+  const className = isError ? "is-error" : isWarning ? `is-warning` : "is-success";
 
   return (
     <>
       <pre>Level state {JSON.stringify(levelState)}</pre>
-      <pre>Markers: {readableMarkers || ""}</pre>
-      <div className="editor-area">
+      <div className={`editor-area ${className}`}>
         <MonacoEditor options={options} editorWillMount={onBeforeMount} editorDidMount={onMount} />
+        {/*
+        <p className={`notification is-error`}>{readableMarkers}</p>
+        <p className={`notification is-warning`}>There are no errors, but the solution isn't quite right...</p>
+        <p className="notification is-success">All good!</p>
+        */}
       </div>
     </>
   );

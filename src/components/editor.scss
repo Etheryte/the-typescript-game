@@ -1,7 +1,29 @@
 .editor-area {
+  position: relative;
   flex: 1 1 0px;
   background-color: #fff;
 
   .editor {
+  }
+
+  .notification {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 0.5em 2em;
+    margin: 0;
+    transition: all 1s ease;
+
+    &.is-error {
+      background-color: rgb(219, 66, 109);
+    }
+
+    &.is-warning {
+      background-color: rgb(250, 192, 2);
+    }
+
+    &.is-success {
+      background-color: rgb(30, 243, 101);
+    }
   }
 }
