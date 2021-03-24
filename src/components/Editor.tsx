@@ -1,6 +1,7 @@
 import { editor, languages } from "monaco-editor";
 import MonacoEditor, { EditorDidMount, EditorWillMount, monaco } from "react-monaco-editor";
 import { useEffect, useState } from "react";
+import debounce from "lodash/debounce";
 
 import { Level } from "../levels";
 
@@ -20,6 +21,7 @@ export default (props: Props) => {
   const [instance, setInstance] = useState<Instance | null>(null);
   const [controller, setController] = useState<Monaco | null>(null);
   const [userMarkers, setUserMarkers] = useState<monaco.editor.IMarker[]>([]);
+  const [isLevelValid, setIsLevelValid] = useState(false);
 
   // When we receive a new level, reset the state
   useEffect(() => {
@@ -34,23 +36,8 @@ export default (props: Props) => {
     }
     instance.setModel(null);
 
-    const markersListener = controller.editor.onDidChangeMarkers((uris) => {
-      for (const uri of uris) {
-        const markers = controller.editor.getModelMarkers({
-          resource: uri,
-        });
-        console.log("markers for " + uri.toString(), markers);
-        if (uri.toString() === USER_PATH) {
-          setUserMarkers(markers);
-        }
-        // TODO: Set system content once there's no markers for user
-        // TODO: Validate level based on system markers
-      }
-    });
-
+    // Setup for the current level
     const defaults = controller.languages.typescript.typescriptDefaults;
-    // TODO: Update when level changes
-    // Could possibly set extra context and stuff like this
     defaults.setExtraLibs([
       {
         content: props.level.context ?? "",
@@ -58,13 +45,47 @@ export default (props: Props) => {
     ]);
 
     const userModel = editor.createModel(props.level.text, "typescript", controller.Uri.parse(USER_PATH));
-    const systemModel = editor.createModel("", "typescript", controller.Uri.parse(SYSTEM_PATH));
-    instance.setModel(userModel);
-    console.log(editor.getModels());
+    // The system model needs to be block scoped off from the user model since we don't use `isolatedModules: true`
+    const systemModel = editor.createModel(
+      /*
+      // TODO: This or manual block scoping via {...}?
+      props.level.validateText + ";export default {};",
+      */
+      "",
+      "typescript",
+      controller.Uri.parse(SYSTEM_PATH)
+    );
+
+    // Setting the system value on markers isn't enough since we don't get updates when one valid state moves to another a-la copy-paste
+    const lodashDebounceChange = debounce(() => {
+      console.log("update system");
+      systemModel.setValue(userModel.getValue() + "\n" + props.level.validateText + ";export default{};");
+    }, 100);
+    const changeListener = userModel.onDidChangeContent(lodashDebounceChange);
+
+    const markersListener = controller.editor.onDidChangeMarkers((uris) => {
+      for (const uri of uris) {
+        const markers = controller.editor.getModelMarkers({
+          resource: uri,
+        });
+        console.log("markers for " + uri.toString(), markers);
+        const path = uri.toString();
+        if (path === USER_PATH) {
+          setUserMarkers(markers);
+        } else if (path === SYSTEM_PATH) {
+          setIsLevelValid(props.level.validate(markers));
+        }
+      }
+    });
 
     // TODO: If the level text has a selection, highlight it
     // editor.setSelection(new Selection(5, 16, 5, 19));
     // TODO: We currently load all languages, perhaps we can remove this?
+
+    // Once everything is ready, set the model
+    instance.setModel(userModel);
+
+    // console.log(controller.editor.getModels());
 
     return function cleanup() {
       // Keep hot reload happy
@@ -74,6 +95,8 @@ export default (props: Props) => {
       instance.setModel(null);
 
       // Remove lingering listeners from the editor
+      lodashDebounceChange.cancel();
+      changeListener.dispose();
       markersListener.dispose();
     };
   }, [instance, controller, props.level]);
@@ -87,6 +110,8 @@ export default (props: Props) => {
       strict: true,
       // Remove default browser interface definitions etc so we don't get a bunch of unrelated things in autocomplete
       noLib: true,
+      // We can't use these lest we ask the user to export the types
+      isolatedModules: false,
     };
     defaults.setCompilerOptions(options);
   };
@@ -122,6 +147,7 @@ export default (props: Props) => {
 
   return (
     <>
+      <pre>Is level valid: {isLevelValid ? "true" : "false"}</pre>
       <pre>{readableMarkers || ""}</pre>
       <div className="editor-area">
         <MonacoEditor options={options} editorWillMount={onBeforeMount} editorDidMount={onMount} />
