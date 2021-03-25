@@ -15,7 +15,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "typeRoots": ["node_modules/@types", "node_modules/monaco-editor/monaco.d.ts"]
   },
-  "include": ["src", "node_modules/monaco-editor/monaco.d.ts"]
+  "include": ["src"]
 }

@@ -1,3 +1,5 @@
+import { monaco } from "react-monaco-editor";
+
 export const context = ``;
 
 export const text = `/**
