@@ -1,8 +1,7 @@
-.top-fill {
-  flex: 0.5 0.5 auto;
+.top-edge {
   width: 100%;
   min-height: 64px;
-  background-color: #45bae6;
+  max-height: 64px;
   background-image: url("../sprites/level/top.gif");
   background-position: 0px top;
   background-repeat: repeat-x;
@@ -18,11 +17,13 @@
 }
 
 .clouds-high {
+  flex: 1 1 auto;
   width: 200%;
+  min-width: 1280px;
   min-height: 128px;
-  max-height: 128px;
+  background-color: #45bae6;
   background-image: url("../sprites/level/clouds_high.gif");
-  background-position: 0px top;
+  background-position: 0px center;
   background-repeat: repeat-x;
   animation: clouds 60s linear;
   animation-iteration-count: infinite;
@@ -30,6 +31,7 @@
 
 .clouds-low {
   width: 200%;
+  min-width: 1280px;
   min-height: 128px;
   max-height: 128px;
   background-image: url("../sprites/level/clouds_low.gif");

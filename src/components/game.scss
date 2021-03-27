@@ -6,14 +6,75 @@
   min-width: 240px;
   min-height: 520px;
   height: 100%;
+  border: 4px solid #456077;
   overflow: hidden;
 
   .character {
     position: absolute;
+    left: 45%;
     top: -108px;
     width: 128px;
     height: 128px;
-    background-image: url("../sprites/char/stand.gif");
+    background-image: url("../sprites/char/run_0.1.gif");
+    background-repeat: no-repeat;
+    animation: fail 3s linear;
+    animation-iteration-count: infinite;
+
+    @keyframes fail {
+      0% {
+        transform: translateX(-400px);
+        background-image: url("../sprites/char/run_0.1.gif");
+      }
+      49% {
+        background-image: url("../sprites/char/run_0.1.gif");
+      }
+      50% {
+        transform: translateX(-100px);
+        background-image: url("../sprites/char/stand.gif");
+      }
+      100% {
+        transform: translateX(-100px);
+        background-image: url("../sprites/char/stand.gif");
+      }
+    }
+
+    @keyframes success {
+      0% {
+        transform: translateX(-400px);
+        background-image: url("../sprites/char/run_0.1.gif");
+      }
+      44% {
+        background-image: url("../sprites/char/run_0.1.gif");
+      }
+      45% {
+        background-image: url("../sprites/char/jump_up.gif");
+      }
+      49% {
+        background-image: url("../sprites/char/jump_up.gif");
+      }
+      55% {
+        background-image: url("../sprites/char/jump_down.gif");
+      }
+      59% {
+        background-image: url("../sprites/char/jump_down.gif");
+      }
+      60% {
+        background-image: url("../sprites/char/run_0.1.gif");
+      }
+      100% {
+        transform: translateX(200px);
+        background-image: url("../sprites/char/run_0.1.gif");
+      }
+    }
+  }
+
+  .obstacle {
+    position: absolute;
+    left: 45%;
+    top: -80px;
+    width: 64px;
+    height: 88px;
+    background-image: url("../sprites/level/obstacle.gif");
     background-repeat: no-repeat;
   }
 }
