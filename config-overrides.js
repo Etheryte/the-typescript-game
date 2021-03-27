@@ -1,6 +1,3 @@
-// See https://www.npmjs.com/package/react-app-rewired
-const webpack = require("webpack");
-
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 module.exports = function override(config, env) {
@@ -13,21 +10,6 @@ module.exports = function override(config, env) {
       languages: ["typescript"],
     })
   );
-
-  // See https://github.com/photonstorm/phaser3-project-template/blob/master/webpack/base.js
-  /*
-  config.plugins.push(
-    new webpack.DefinePlugin({
-      CANVAS_RENDERER: JSON.stringify(true),
-      WEBGL_RENDERER: JSON.stringify(true),
-    })
-  );
-
-  config.module.rules.push({
-    test: [/\.vert$/, /\.frag$/],
-    use: "raw-loader",
-  });
-  */
 
   return config;
 };
