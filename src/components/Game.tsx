@@ -1,7 +1,12 @@
-import Phaser, { Game } from "phaser";
-import { useCallback, useEffect, useRef } from "react";
+import Phaser from "phaser";
+import { useEffect, useRef } from "react";
 
-function preload(this: any) {
+// TODO: Phaser seems pretty fat, perhaps Pixi instead? https://pixijs.io/examples/#/tilemaps/basic.js
+
+// TODO: See https://phaser.io/examples/v3/view/animation/60fps-animation-test
+// TODO: See https://stackoverflow.com/a/58381474/1470607 for resizing
+
+function preload(this: Phaser.Scene) {
   this.load.setBaseURL("https://labs.phaser.io");
 
   this.load.image("sky", "assets/skies/space3.png");
@@ -9,24 +14,14 @@ function preload(this: any) {
   this.load.image("red", "assets/particles/red.png");
 }
 
-function create(this: any) {
+function create(this: Phaser.Scene) {
   this.add.image(400, 300, "sky");
-
-  var particles = this.add.particles("red");
-
-  var emitter = particles.createEmitter({
-    speed: 100,
-    scale: { start: 1, end: 0 },
-    blendMode: "ADD",
-  });
 
   var logo = this.physics.add.image(400, 100, "logo");
 
   logo.setVelocity(100, 200);
   logo.setBounce(1, 1);
   logo.setCollideWorldBounds(true);
-
-  emitter.startFollow(logo);
 }
 
 export default () => {
@@ -39,8 +34,8 @@ export default () => {
     const config: Phaser.Types.Core.GameConfig = {
       parent: container.current,
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: "90%",
+      height: "90%",
       physics: {
         default: "arcade",
         arcade: {

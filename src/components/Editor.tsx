@@ -134,6 +134,7 @@ export default (props: Props) => {
     language: "typescript",
     // We set a model in `onMount()` instead
     model: null,
+    automaticLayout: true,
   };
 
   const readableMarkers = userMarkers

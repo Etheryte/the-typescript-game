@@ -15,6 +15,7 @@ module.exports = function override(config, env) {
   );
 
   // See https://github.com/photonstorm/phaser3-project-template/blob/master/webpack/base.js
+  /*
   config.plugins.push(
     new webpack.DefinePlugin({
       CANVAS_RENDERER: JSON.stringify(true),
@@ -26,6 +27,7 @@ module.exports = function override(config, env) {
     test: [/\.vert$/, /\.frag$/],
     use: "raw-loader",
   });
+  */
 
   return config;
 };
