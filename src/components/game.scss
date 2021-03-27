@@ -1,0 +1,19 @@
+@import "./scene.scss";
+
+.game {
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+  min-height: 520px;
+  height: 100%;
+  overflow: hidden;
+
+  .character {
+    position: absolute;
+    top: -108px;
+    width: 128px;
+    height: 128px;
+    background-image: url("../sprites/char/stand.gif");
+    background-repeat: no-repeat;
+  }
+}

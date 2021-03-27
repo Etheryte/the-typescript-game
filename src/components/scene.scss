@@ -1,0 +1,68 @@
+.top-fill {
+  flex: 0.5 0.5 auto;
+  width: 100%;
+  min-height: 64px;
+  background-color: #45bae6;
+  background-image: url("../sprites/level/top.gif");
+  background-position: 0px top;
+  background-repeat: repeat-x;
+}
+
+@keyframes clouds {
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(-640px);
+  }
+}
+
+.clouds-high {
+  width: 200%;
+  min-height: 128px;
+  max-height: 128px;
+  background-image: url("../sprites/level/clouds_high.gif");
+  background-position: 0px top;
+  background-repeat: repeat-x;
+  animation: clouds 60s linear;
+  animation-iteration-count: infinite;
+}
+
+.clouds-low {
+  width: 200%;
+  min-height: 128px;
+  max-height: 128px;
+  background-image: url("../sprites/level/clouds_low.gif");
+  background-position: 0px top;
+  background-repeat: repeat-x;
+  animation: clouds 120s linear;
+  animation-iteration-count: infinite;
+}
+
+.hills {
+  width: 100%;
+  min-height: 128px;
+  max-height: 128px;
+  background-image: url("../sprites/level/hills.gif");
+  background-position: 0px top;
+  background-repeat: repeat-x;
+}
+
+.ground-top {
+  position: relative;
+  width: 100%;
+  min-height: 64px;
+  max-height: 64px;
+  background-image: url("../sprites/level/ground_top.gif");
+  background-position: 0px top;
+  background-repeat: repeat-x;
+}
+
+.ground-fill {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 64px;
+  background-image: url("../sprites/level/ground_fill.gif");
+  background-position: 0px top;
+  background-repeat: repeat;
+}
