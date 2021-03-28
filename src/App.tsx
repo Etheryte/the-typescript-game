@@ -13,16 +13,7 @@ function App() {
     <>
       <section className="app-section">
         <h1>The Typescript Game</h1>
-        <p>
-          Welcome to the Typescript Game. Typescript is a programming language that helps you write good code by
-          checking the types of things for you.
-        </p>
-        <p>
-          In Typescript, the broadest type to allow anything is called <code>any</code>.
-        </p>
-        <p>
-          Use the type <code>any</code> to tell the hero to jump over anything in their way!
-        </p>
+        {level.description}
         <p>
           Level {levels.indexOf(level) + 1} of {levels.length}.
         </p>
