@@ -12,6 +12,7 @@ type Instance = monaco.editor.IStandaloneCodeEditor;
 
 type Props = {
   level: Level;
+  setIsValid: (isValid: boolean) => void;
 };
 
 const USER_PATH = "inmemory://user";
@@ -22,6 +23,8 @@ export default (props: Props) => {
   const [controller, setController] = useState<Monaco | null>(null);
   const [userMarkers, setUserMarkers] = useState<monaco.editor.IMarker[]>([]);
   const [levelState, setLevelState] = useState<Partial<ReturnType<typeof props.level.getState>>>({ isValid: false });
+  const level = props.level;
+  const setIsValid = props.setIsValid;
 
   // When we receive a new level, reset the state
   useEffect(() => {
@@ -40,11 +43,11 @@ export default (props: Props) => {
     const defaults = controller.languages.typescript.typescriptDefaults;
     defaults.setExtraLibs([
       {
-        content: props.level.context ?? "",
+        content: level.context ?? "",
       },
     ]);
 
-    const userModel = editor.createModel(props.level.text, "typescript", controller.Uri.parse(USER_PATH));
+    const userModel = editor.createModel(level.text, "typescript", controller.Uri.parse(USER_PATH));
     const systemModel = editor.createModel("", "typescript", controller.Uri.parse(SYSTEM_PATH));
 
     // Setting the system value on markers isn't enough since we don't get updates when one valid state moves to another a-la copy-paste
@@ -54,7 +57,7 @@ export default (props: Props) => {
       // Could alternatively do `export default {}` here too
       systemModel.setValue(`{
       ;${userModel.getValue()}
-      ;${props.level.validateText}
+      ;${level.validateText}
       }`);
     }, 100);
     const changeListener = userModel.onDidChangeContent(lodashDebounceChange);
@@ -68,8 +71,11 @@ export default (props: Props) => {
         const path = uri.toString();
         if (path === USER_PATH) {
           setUserMarkers(markers);
+          setIsValid(false);
         } else if (path === SYSTEM_PATH) {
-          setLevelState(props.level.getState(markers));
+          const levelState = level.getState(markers);
+          setLevelState(levelState);
+          setIsValid(levelState.isValid);
         }
       }
     });
@@ -95,7 +101,7 @@ export default (props: Props) => {
       changeListener.dispose();
       markersListener.dispose();
     };
-  }, [instance, controller, props.level]);
+  }, [instance, controller, level, setIsValid]);
 
   const onBeforeMount: EditorWillMount = (controller: Monaco) => {
     const defaults = controller.languages.typescript.typescriptDefaults;
@@ -153,7 +159,9 @@ export default (props: Props) => {
 
   return (
     <>
+      {/*
       <pre>Level state {JSON.stringify(levelState)}</pre>
+      */}
       <div className={`editor-area ${className}`}>
         <MonacoEditor options={options} editorWillMount={onBeforeMount} editorDidMount={onMount} />
         {/*

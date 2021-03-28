@@ -2,10 +2,12 @@ import { monaco } from "react-monaco-editor";
 
 export const context = ``;
 
-export const text = `/**
- * Foo bar
+export const text = `
+/**
+ * This is a type definition.
+ * Similar to variables, you can declare types and assign values to them.
+ * This specific type tells the hero what kind of objects to jump over.
  */
-
 type JumpOver = 
 `;
 

@@ -10,4 +10,12 @@
   &:last-child {
     padding-left: 1rem;
   }
+
+  code {
+    background: #fafafa;
+    padding: 0.2em 0.5em;
+    font-size: inherit;
+    border-radius: 0.5em;
+    border: 1px solid #456077;
+  }
 }
