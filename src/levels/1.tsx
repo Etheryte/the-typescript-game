@@ -23,8 +23,7 @@ export const text = `
  * Similar to variables, you can assign values to types.
  * This specific type tells the hero what kind of objects to jump over.
  */
-type JumpOver = 
-`;
+type JumpOver = `;
 
 export const validateText = `
 // See https://github.com/microsoft/TypeScript/issues/27024#issuecomment-421529650
