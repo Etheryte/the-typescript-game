@@ -6,7 +6,7 @@ All art is [CC0](https://creativecommons.org/publicdomain/zero/1.0/), made by [G
 
 [Try it out here!](https://etheryte.github.io/the-typescript-game/)
 
-![Screenshot of the game](https://github.com/Etheryte/the-typescript-game/blob/master/demo.png?raw=true)
+![Screenshot of the game](https://github.com/Etheryte/the-typescript-game/blob/master/readme.png?raw=true)
 
 ## Development
 
